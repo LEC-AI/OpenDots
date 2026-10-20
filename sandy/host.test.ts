@@ -28,5 +28,14 @@ test('real discovery and read execution exclude writes and conflicting hints', a
   const failed=await hostConnection({operation:'call',tool:'failed'},config);
   assert.equal(JSON.stringify(failed).includes('sensitive-provider-url'),false);
   assert.equal(calls,1);
+  const writable = {...config,writes:['write']};
+  const writeCatalog:any = await hostConnection({operation:'list'},writable);
+  const draft = writeCatalog.tools.find((tool:any)=>tool.name==='write');
+  assert.equal(draft.mode,'write');
+  await assert.rejects(hostConnection({operation:'call',tool:'write'},writable));
+  await assert.rejects(hostConnection({operation:'write',tool:'write',schema_sha256:'changed'},writable));
+  assert.equal(calls,1);
+  await hostConnection({operation:'write',tool:'write',schema_sha256:draft.schema_sha256},writable);
+  assert.equal(calls,2);
  } finally {server.closeAllConnections();await new Promise<void>(resolve=>server.close(()=>resolve()));}
 });
