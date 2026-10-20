@@ -185,7 +185,7 @@ export class ConnectionService {
           const tool = parsed.data;
           if (JSON.stringify(tool.inputSchema).length > MAX_SCHEMA_BYTES)
             continue;
-          const readOnly = tool.annotations?.readOnlyHint === true;
+          const readOnly = tool.annotations?.readOnlyHint === true && tool.annotations?.destructiveHint !== true;
           const prior = previous.find((item) => item.name === tool.name);
           tools.push({
             name: tool.name,

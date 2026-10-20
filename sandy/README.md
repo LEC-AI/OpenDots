@@ -1,0 +1,3 @@
+# Sandy connector boundary
+
+Run `npm ci` in this directory, then link the checkout root node_modules to sandy/node_modules. `node --import ./sandy/node_modules/tsx/dist/loader.mjs sandy/cli.ts` accepts JSON on stdin. Set RUNTIME_CONNECTORS_MCP_URL, RUNTIME_CONNECTORS_MCP_TOKEN and comma-separated RUNTIME_CONNECTORS_ALLOWED_READS. The actual ConnectionService discovers and calls MCP tools. Only explicitly allowed, non-destructive tools annotated read-only are exposed. The ephemeral ConnectionStore is a discovery cache, not another task or approval store. Sandy is the sole task and permission authority. This works with a configured Zapier MCP endpoint; it does not provision a Zapier account.
