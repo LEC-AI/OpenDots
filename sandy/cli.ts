@@ -9,6 +9,7 @@ try {
   const result = await hostConnection(JSON.parse(input), {
     url: process.env.RUNTIME_CONNECTORS_MCP_URL ?? '',
     token: process.env.RUNTIME_CONNECTORS_MCP_TOKEN ?? '',
+    authHeader: process.env.RUNTIME_CONNECTORS_AUTH_HEADER || 'authorization',
     writes: (process.env.RUNTIME_CONNECTORS_ALLOWED_WRITES ?? '').split(',').map(s => s.trim()).filter(Boolean),
     reads: (process.env.RUNTIME_CONNECTORS_ALLOWED_READS ?? '').split(',').map(s => s.trim()).filter(Boolean),
   });

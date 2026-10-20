@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 import { ConnectionStore } from '../src/server/connection-store.ts';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { ConnectionService } from '../src/server/connections.ts';
 
 /** Reuse the real discovery, schema limits, timeouts and result normalizer.
@@ -13,10 +14,16 @@ export async function hostConnection(request: {
   schema_sha256?: string;
   tool?: string;
   arguments?: Record<string, unknown>;
-}, config: { url: string; token: string; reads: string[]; writes?: string[] }) {
+}, config: { url: string; token: string; reads: string[]; writes?: string[]; authHeader?: string }) {
   const database = new DatabaseSync(':memory:');
   try {
-    const service = new ConnectionService(new ConnectionStore(database));
+    const authHeader = config.authHeader ?? 'authorization';
+    if (!['authorization', 'x-api-key'].includes(authHeader)) throw new Error('Unsupported auth header');
+    const service = new ConnectionService(new ConnectionStore(database), ({url, token, signal}) =>
+      new StreamableHTTPClientTransport(new URL(url), {
+        requestInit: token ? {headers: {[authHeader]: authHeader === 'authorization' ? `Bearer ${token}` : token}} : undefined,
+        fetch: (input, init) => fetch(input, {...init, signal: AbortSignal.any([signal, ...(init?.signal ? [init.signal] : [])])}),
+      }));
     await service.add('host', {
       name: 'connected_apps', url: config.url, token: config.token,
     });
